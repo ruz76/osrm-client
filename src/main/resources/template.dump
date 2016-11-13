@@ -1,0 +1,43 @@
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+
+SET search_path = temp, pg_catalog;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: linetest; Type: TABLE; Schema: temp; Owner: data; Tablespace: 
+--
+
+DROP TABLE IF EXISTS linetest2;
+
+CREATE TABLE linetest2 (
+    gid integer,
+    geom public.geometry(LineString,0)
+);
+
+
+ALTER TABLE temp.linetest2 OWNER TO data;
+
+--
+-- Data for Name: linetest2; Type: TABLE DATA; Schema: temp; Owner: data
+--
+
+COPY linetest2 (gid, geom) FROM stdin;
+1	00000000020000000C402E537B4A2339C14048C554C985F06F402E54B5DCC63F144048C515379FA97E402E54CAD57BC7F74048C50ABB44E50C402E55143BF727134048C4C985F06F69402E55460AA64C304048C4ADAB9F559B402E55AEE631F8A14048C4B6D86EC17F402E566E43AA79BC4048C4BBC2B94D94402E56E58A32F4494048C4CD20AFA2F0402E57357E670E2C4048C4D4024B33DB402E5775B81301654048C4D5F99C38B0402E577EE4E26D484048C4D940789614402E56EAC86056824048C4ED916872B0
+\.
+
+
+--
+-- PostgreSQL database dump complete
+--
