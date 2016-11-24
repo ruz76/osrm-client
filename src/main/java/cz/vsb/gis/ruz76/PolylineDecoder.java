@@ -16,7 +16,7 @@ import java.util.List;
 public class PolylineDecoder {
     private static final double DEFAULT_PRECISION = 1E5;
 
-    public static String decodeToHex(String encoded) {
+    public static LineString decodeToLineString(String encoded){
         List<Point> pl = decode(encoded);
         Coordinate cor[] = new Coordinate[pl.size()];
         for (int i=0; i<pl.size(); i++) {
@@ -25,6 +25,11 @@ public class PolylineDecoder {
 
         GeometryFactory gf = new GeometryFactory();
         LineString ls = gf.createLineString(cor);
+        return ls;
+    }
+
+    public static String decodeToHex(String encoded) {
+        LineString ls = decodeToLineString(encoded);
 
         WKBWriter wkbw = new WKBWriter();
         byte[] b = wkbw.write(ls);
