@@ -23,17 +23,23 @@ import java.util.List;
  */
 public class Intersect {
     private final SimpleFeatureSource zsj_fs;
+	private final FileDataStore zsj_store;
     public static Point start;
     public Intersect() throws IOException {
-        FileDataStore store = FileDataStoreFinder.getDataStore(new File("zsj.shp"));
-        zsj_fs = store.getFeatureSource();
+        zsj_store = FileDataStoreFinder.getDataStore(new File("zsj.shp"));
+        zsj_fs = zsj_store.getFeatureSource();
     }
+	
+	public void close() throws Exception {
+		//zsj_store.dispose();
+	}
 
     /*
     * Prints zsj that intersects with routes ordered based on route
     * This is the simplest and hopefully fastest way based only on distance from start point
     * */
-    public void printRoute_Zsjs(LineString route, String routeid) throws Exception {
+    public String getRoute_Zsjs(LineString route, String routeid) throws Exception {
+		String zsjs_string = "";
         start = route.getStartPoint();
         FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
         Filter filter = ff.intersects(ff.property("the_geom"), ff.literal(route));
@@ -45,15 +51,20 @@ public class Intersect {
             zsjs.add(zsj);
         }
         Collections.sort(zsjs, new CentroidDistanceComparator());
-        System.out.println(zsjs);
-        //System.out.println(zsj.getAttribute("zsjid"));
+		for (int i = 0; i < zsjs.size(); i++) {
+			SimpleFeature zsj = (SimpleFeature) zsjs.get(i);
+			zsjs_string += "INSERT INTO zsjs (zsjid_from_to, zsjid, seq) VALUES ('" + routeid + "', '" + zsj.getAttribute("zsjid") + "', " + i + ");\n";
+		}
+		return zsjs_string;
+        
     }
 
     /*
     * Prints zsj that intersects with routes ordered based on route
     * This is the more complicated way and slower way based on comparison of each segment in linestring
     * */
-    public void printRoute_Zsjs_MorePrecise(LineString route, String routeid) throws Exception {
+    public String getRoute_Zsjs_MorePrecise(LineString route, String routeid) throws Exception {
+		String zsjs_string = "";
         System.out.println("Route id: " + routeid);
         GeometryFactory gf = new GeometryFactory();
         Coordinate cs[] = new Coordinate[2];
@@ -69,25 +80,24 @@ public class Intersect {
             String zsjid = "";
             while (zsj_fs_sfi.hasNext()) {
                 SimpleFeature zsj = zsj_fs_sfi.next();
-                Polygon zsj_polygon = (Polygon) zsj.getDefaultGeometry();
+                MultiPolygon zsj_polygon = (MultiPolygon) zsj.getDefaultGeometry();
                 double cur_segment_lenght = zsj_polygon.intersection(segment).getLength();
                 if (cur_segment_lenght > segment_lenght) {
                     segment_lenght = cur_segment_lenght;
                     zsjid = zsj.getAttribute("zsjid").toString();
                 }
             }
-            System.out.println(zsjid);
+			zsjs_string += "INSERT INTO zsjs_moreprecise (zsjid_from_to, zsjid, seq) VALUES ('" + routeid + "', '" + zsjid + "', " + i + ");\n";
         }
-
-        //System.out.println(zsj.getAttribute("zsjid"));
+		return zsjs_string;
     }
 }
 
 class CentroidDistanceComparator implements Comparator<SimpleFeature> {
     @Override
     public int compare(SimpleFeature a, SimpleFeature b) {
-        Polygon pa = (Polygon) a.getDefaultGeometry();
-        Polygon pb = (Polygon) b.getDefaultGeometry();
+        MultiPolygon pa = (MultiPolygon) a.getDefaultGeometry();
+        MultiPolygon pb = (MultiPolygon) b.getDefaultGeometry();
         return pa.distance(Intersect.start) < pb.distance(Intersect.start) ? -1 : pa.distance(Intersect.start) == pb.distance(Intersect.start) ? 0 : 1;
     }
 }
