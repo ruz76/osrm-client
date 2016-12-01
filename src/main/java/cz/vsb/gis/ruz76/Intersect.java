@@ -83,7 +83,12 @@ public class Intersect {
             while (zsj_fs_sfi.hasNext()) {
                 SimpleFeature zsj = zsj_fs_sfi.next();
                 MultiPolygon zsj_polygon = (MultiPolygon) zsj.getDefaultGeometry();
-                double cur_segment_lenght = zsj_polygon.intersection(segment).getLength();
+                double cur_segment_lenght = 0;
+                try {
+                    cur_segment_lenght = zsj_polygon.intersection(segment).getLength();
+                } catch (Exception ex) {
+                    zsjs_string += "--WRONG GEOMETRY: " + ex.getMessage() + "\n";
+                }
                 if (cur_segment_lenght > segment_lenght) {
                     segment_lenght = cur_segment_lenght;
                     zsjid = zsj.getAttribute("zsjid").toString();
